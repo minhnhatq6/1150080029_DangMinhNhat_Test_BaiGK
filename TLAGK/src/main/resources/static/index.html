@@ -147,6 +147,23 @@
             alert(`Test Case [${testName}] đã chạy xong! Hãy kiểm tra Console và Tổng tiền trên UI.`);
         }, 500);
     }
+    async function takeScreenshot(name) {
+
+    const element = document.body;
+
+    const canvas = await html2canvas(element);
+
+    const link = document.createElement("a");
+    link.download = name + ".png";
+    link.href = canvas.toDataURL();
+
+    link.click();
+    }
+    async function resetCart(){
+    await fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, {method:'POST'});
+    await fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, {method:'POST'});
+    await new Promise(r=>setTimeout(r,300));
+}
     async function simulate_TC007() {
 
     console.log("\n--- BẮT ĐẦU TEST CASE [TC007] ---");
@@ -163,161 +180,155 @@
         console.log("Status:", res.status);
         console.log("Response:", text);
 
-        alert("TC007 chạy xong! Kiểm tra console để xem lỗi API.");
-
     } catch (err) {
 
         console.error("Lỗi khi gọi API:", err);
 
     }
 
-    // reload giỏ hàng để chứng minh không thay đổi
+    await new Promise(r=>setTimeout(r,500));
+
     loadCart();
+    await takeScreenshot("TC007_Invalid_Product");
 }
-    function simulate_TC008() {
-        const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
-        const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
-        runTest("TC007: Thêm 2 Laptop", req1, req2);
-    }
-    
-    function simulate_TC009() {
-        const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
-        const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
-        runTest("TC008: Thêm Laptop & Chuột", req1, req2);
-    }
-    function simulate_TC010() {
-        // Giả sử: Req A là Thêm 1 Chuột, Req B là Giảm 1 Laptop (qty = -1)
-        const req1 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
-        const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=-1`, { method: 'POST' });
-        
-        runTest("TC010: Thêm Chuột & Giảm Laptop", req1, req2);
-    }
-    function simulate_TC011() {
-        const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
-        const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
-        runTest("TC011: Xóa Laptop & Thêm Chuột", req1, req2);
-    }
-    
-    function simulate_TC012() {
-        const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
-        const req2 = fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, { method: 'POST' });
-        runTest("TC012: Xóa Laptop & Xóa Chuột", req1, req2);
-    }
-    async function takeScreenshot(name) {
 
-    const element = document.body;
+async function simulate_TC008() {
 
-    const canvas = await html2canvas(element);
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC008] ---");
 
-    const link = document.createElement("a");
-    link.download = name + ".png";
-    link.href = canvas.toDataURL();
+    const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+    const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
 
-    link.click();
-    }
-    async function resetCart(){
-
-    await fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, {method:'POST'});
-    await fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, {method:'POST'});
-
-    await new Promise(r=>setTimeout(r,300));
-}
-async function TC001(){
-
-    console.log("TC001: Add Laptop");
-
-    await resetCart();
-    await updateCart(P_LAPTOP,1);
+    await Promise.all([req1, req2]);
 
     await new Promise(r=>setTimeout(r,500));
 
+    loadCart();
+    await takeScreenshot("TC008_Add_2_Laptop_Concurrent");
+}
+
+async function simulate_TC009() {
+
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC009] ---");
+
+    const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+    const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+
+    await Promise.all([req1, req2]);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    loadCart();
+    await takeScreenshot("TC009_Add_Laptop_Mouse_Concurrent");
+}
+
+async function simulate_TC010() {
+
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC010] ---");
+
+    const req1 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+    const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=-1`, { method: 'POST' });
+
+    await Promise.all([req1, req2]);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    loadCart();
+    await takeScreenshot("TC010_Add_Mouse_Decrease_Laptop");
+}
+
+async function simulate_TC011() {
+
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC011] ---");
+
+    const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
+    const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+
+    await Promise.all([req1, req2]);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    loadCart();
+    await takeScreenshot("TC011_Remove_Laptop_Add_Mouse");
+}
+
+async function simulate_TC012() {
+
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC012] ---");
+
+    const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
+    const req2 = fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, { method: 'POST' });
+
+    await Promise.all([req1, req2]);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    loadCart();
+    await takeScreenshot("TC012_Remove_Both_Items");
+}
+    
+async function TC001(){
+    console.log("TC001: Add Laptop");
+    await resetCart();
+    await updateCart(P_LAPTOP,1);
+    await new Promise(r=>setTimeout(r,500));
     await takeScreenshot("TC001_Add_Laptop");
 }
 
 async function TC002(){
-
     console.log("TC002: Add Laptop twice");
-
     await resetCart();
-
     await updateCart(P_LAPTOP,1);
     await updateCart(P_LAPTOP,1);
-
     await new Promise(r=>setTimeout(r,500));
-
     await takeScreenshot("TC002_Add_Laptop_Twice");
 }
 
 async function TC003(){
-
     console.log("TC003: Add Mouse");
-
     await resetCart();
-
     await updateCart(P_MOUSE,1);
-
     await new Promise(r=>setTimeout(r,500));
-
     await takeScreenshot("TC003_Add_Mouse");
 }
 
 async function TC004(){
-
     console.log("TC004: Add Laptop + Mouse");
-
     await resetCart();
-
     await updateCart(P_LAPTOP,1);
     await updateCart(P_MOUSE,1);
-
     await new Promise(r=>setTimeout(r,500));
-
     await takeScreenshot("TC004_Add_Laptop_Mouse");
 }
 
 async function TC005(){
-
     console.log("TC005: Remove Laptop");
-
     await resetCart();
-
     await updateCart(P_LAPTOP,1);
-
     await removeItem(P_LAPTOP);
-
     await new Promise(r=>setTimeout(r,500));
-
     await takeScreenshot("TC005_Remove_Laptop");
 }
 
 async function TC006(){
-
     console.log("TC006: Add Multiple");
-
     await resetCart();
-
     await updateCart(P_LAPTOP,2);
     await updateCart(P_MOUSE,1);
-
     await new Promise(r=>setTimeout(r,500));
-
     await takeScreenshot("TC006_Add_Multiple");
 }
 
 async function runWhiteBoxTests(){
-
     console.clear();
     console.log("🚀 RUNNING TC001 → TC006");
-
     await TC001();
     await TC002();
     await TC003();
     await TC004();
     await TC005();
     await TC006();
-
     console.log("✅ ALL TESTS DONE");
-
     alert("Đã chạy xong TC001 → TC006 và chụp screenshot!");
 }
 
