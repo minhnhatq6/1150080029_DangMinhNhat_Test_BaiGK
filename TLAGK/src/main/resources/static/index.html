@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo E-Commerce - Đề tài TLA+</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .container { display: flex; gap: 30px; max-width: 1200px; margin: auto; }
+        .column { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        .product-card { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .price { color: #e74c3c; font-weight: bold; font-size: 1.2em; }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add { background-color: #3498db; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-qty { background-color: #ecf0f1; color: #333; padding: 5px 10px; border-radius: 3px; border: 1px solid #ccc; }
+        .btn-remove { background-color: #e74c3c; color: white; font-size: 0.8em; padding: 4px 8px; }
+        .total-section { text-align: right; font-size: 1.5em; font-weight: bold; color: #27ae60; background: #e8f8f5; padding: 15px; border-radius: 8px; }
+        
+        /* NÂNG CẤP KHU VỰC TEST */
+        .lab-zone { margin-top: 30px; border: 2px dashed #e74c3c; background-color: #fadbd8; padding: 20px; border-radius: 10px; }
+        .lab-zone h3 { color: #c0392b; margin-top: 0; text-align: center; }
+        .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;}
+        .btn-test { background-color: #c0392b; color: white; padding: 12px; font-size: 1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; width: 100%; }
+        .btn-test:hover { background-color: #a93226; }
+        .btn-prepare { background-color: #f39c12; width: 100%; }
+        .btn-prepare:hover { background-color: #d68910; }
+    </style>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="header"><h1>🛒 Hệ Thống Giỏ Hàng Demo</h1></div>
+
+<div class="container">
+    <div class="column"><h2>🛍️ Cửa Hàng</h2><div id="productList"></div></div>
+    <div class="column">
+        <h2>🛒 Giỏ Hàng Của Bạn</h2>
+        <table><thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thao tác</th></tr></thead><tbody id="cartItems"></tbody></table>
+        <div class="total-section">Tổng tiền thanh toán: $<span id="totalPrice">0</span></div>
+    </div>
+</div>
+
+<!-- NÂNG CẤP: PHÒNG THÍ NGHIỆM CONCURRENCY -->
+<div class="container" style="margin-top: 20px;">
+    <div class="lab-zone" style="width: 100%;">
+        <h3>🔬 Phòng Thí Nghiệm Đồng Thời (Race Condition Lab)</h3>
+         <button class="btn btn-prepare" onclick="runWhiteBoxTests()">
+🚀 Chạy toàn bộ Test Case TC001 → TC006
+</button>
+        <p style="text-align:center;">Mở Console (F12) để xem log chi tiết. Bắt đầu bằng cách chuẩn bị giỏ hàng.</p>
+       
+        <button class="btn btn-prepare" onclick="prepareCartForTests()">Bước 1: Chuẩn bị giỏ hàng (Thêm 1 Laptop & 1 Chuột)</button>
+        
+        <div class="test-grid">
+            <button class="btn-test" onclick="simulate_TC007()">TC007: Thêm sản phẩm với ID không tồn tại</button>
+            <button class="btn-test" onclick="simulate_TC008()">TC008: Thêm 2 Laptop cùng lúc</button>
+            <button class="btn-test" onclick="simulate_TC009()">TC009: Thêm Laptop & Chuột cùng lúc</button>
+            <button class="btn-test" onclick="simulate_TC010()">TC010: Thêm Chuột & Giảm Laptop</button>
+            <button class="btn-test" onclick="simulate_TC011()">TC011: Xóa Laptop & Thêm Chuột cùng lúc</button>
+            <button class="btn-test" onclick="simulate_TC012()">TC012: Xóa Laptop & Xóa Chuột cùng lúc</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // --- PHẦN BỊ THIẾU LÀ Ở ĐÂY ---
+    const P_LAPTOP = 1; // ID của Laptop trong database
+    const P_MOUSE = 2;  // ID của Chuột trong database
+    let productsDict = {}; // Biến lưu thông tin sản phẩm
+
+    // --- CÁC HÀM GIAO DIỆN CƠ BẢN ---
+    async function loadProducts() {
+        const res = await fetch('/api/cart/products');
+        const products = await res.json();
+        let html = '';
+        products.forEach(p => {
+            productsDict[p.id] = p;
+            html += `<div class="product-card"><div><h3>${p.name}</h3><div class="price">$${p.price}</div></div><button class="btn btn-add" onclick="updateCart(${p.id}, 1)">+ Thêm vào giỏ</button></div>`;
+        });
+        document.getElementById('productList').innerHTML = html;
+        loadCart();
+    }
+
+    async function loadCart() {
+        const resCart = await fetch('/api/cart/1');
+        const cart = await resCart.json();
+        document.getElementById('totalPrice').innerText = cart.totalPrice;
+        const resItems = await fetch('/api/cart/1/items');
+        const items = await resItems.json();
+        let html = '';
+        if (items.length === 0) {
+            html = '<tr><td colspan="4" style="text-align:center;">Giỏ hàng trống</td></tr>';
+        } else {
+            items.forEach(item => {
+                if (item.quantity > 0) {
+                    const pName = productsDict[item.productId] ? productsDict[item.productId].name : 'Sản phẩm ' + item.productId;
+                    html += `<tr><td><b>${pName}</b></td><td>$${item.price}</td><td><div class="qty-controls"><button class="btn-qty" onclick="updateCart(${item.productId}, -1)">-</button><span>${item.quantity}</span><button class="btn-qty" onclick="updateCart(${item.productId}, 1)">+</button></div></td><td><button class="btn-remove" onclick="removeItem(${item.productId})">Xóa</button></td></tr>`;
+                }
+            });
+        }
+        document.getElementById('cartItems').innerHTML = html;
+    }
+
+    async function updateCart(productId, qty) {
+        await fetch(`/api/cart/1/add?productId=${productId}&qty=${qty}`, { method: 'POST' });
+        loadCart();
+    }
+    
+    async function removeItem(productId) {
+        if (confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) {
+            await fetch(`/api/cart/1/remove?productId=${productId}`, { method: 'POST' });
+            loadCart();
+        }
+    }
+
+    // --- CÁC HÀM MÔ PHỎNG LỖI ---
+    async function prepareCartForTests() {
+        console.clear();
+        console.log("--- BẮT ĐẦU CHUẨN BỊ GIỎ HÀNG ---");
+        await removeItem(P_LAPTOP); // Xóa sạch để làm lại từ đầu
+        await removeItem(P_MOUSE);
+        setTimeout(async () => {
+             await updateCart(P_LAPTOP, 1);
+             await updateCart(P_MOUSE, 1);
+             console.log("Chuẩn bị xong! Giỏ hàng đã có 1 Laptop và 1 Chuột. Tổng tiền: $1050.");
+             alert("Đã chuẩn bị xong giỏ hàng để test!");
+             loadCart();
+        }, 300); // Chờ một chút để đảm bảo xóa xong
+    }
+
+    const runTest = async (testName, req1, req2) => {
+        console.log(`\n--- BẮT ĐẦU TEST CASE [${testName}] ---`);
+        console.log("Chuẩn bị và bắn 2 request song song...");
+        
+        await Promise.all([req1, req2]);
+        
+        console.log("Cả 2 request đã được gửi đi. Đang chờ server xử lý...");
+        setTimeout(() => {
+            console.log("Server đã xử lý xong. Lấy lại dữ liệu giỏ hàng để kiểm tra kết quả.");
+            loadCart();
+            alert(`Test Case [${testName}] đã chạy xong! Hãy kiểm tra Console và Tổng tiền trên UI.`);
+        }, 500);
+    }
+    async function simulate_TC007() {
+
+    console.log("\n--- BẮT ĐẦU TEST CASE [TC007] ---");
+    console.log("Thêm sản phẩm với productId không tồn tại (999)");
+
+    try {
+
+        const res = await fetch(`/api/cart/1/add?productId=999&qty=1`, {
+            method: 'POST'
+        });
+
+        const text = await res.text();
+
+        console.log("Status:", res.status);
+        console.log("Response:", text);
+
+        alert("TC007 chạy xong! Kiểm tra console để xem lỗi API.");
+
+    } catch (err) {
+
+        console.error("Lỗi khi gọi API:", err);
+
+    }
+
+    // reload giỏ hàng để chứng minh không thay đổi
+    loadCart();
+}
+    function simulate_TC008() {
+        const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+        const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+        runTest("TC007: Thêm 2 Laptop", req1, req2);
+    }
+    
+    function simulate_TC009() {
+        const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+        const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+        runTest("TC008: Thêm Laptop & Chuột", req1, req2);
+    }
+    function simulate_TC010() {
+        // Giả sử: Req A là Thêm 1 Chuột, Req B là Giảm 1 Laptop (qty = -1)
+        const req1 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+        const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=-1`, { method: 'POST' });
+        
+        runTest("TC010: Thêm Chuột & Giảm Laptop", req1, req2);
+    }
+    function simulate_TC011() {
+        const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
+        const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+        runTest("TC011: Xóa Laptop & Thêm Chuột", req1, req2);
+    }
+    
+    function simulate_TC012() {
+        const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
+        const req2 = fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, { method: 'POST' });
+        runTest("TC012: Xóa Laptop & Xóa Chuột", req1, req2);
+    }
+    async function takeScreenshot(name) {
+
+    const element = document.body;
+
+    const canvas = await html2canvas(element);
+
+    const link = document.createElement("a");
+    link.download = name + ".png";
+    link.href = canvas.toDataURL();
+
+    link.click();
+    }
+    async function resetCart(){
+
+    await fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, {method:'POST'});
+    await fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, {method:'POST'});
+
+    await new Promise(r=>setTimeout(r,300));
+}
+async function TC001(){
+
+    console.log("TC001: Add Laptop");
+
+    await resetCart();
+    await updateCart(P_LAPTOP,1);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC001_Add_Laptop");
+}
+
+async function TC002(){
+
+    console.log("TC002: Add Laptop twice");
+
+    await resetCart();
+
+    await updateCart(P_LAPTOP,1);
+    await updateCart(P_LAPTOP,1);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC002_Add_Laptop_Twice");
+}
+
+async function TC003(){
+
+    console.log("TC003: Add Mouse");
+
+    await resetCart();
+
+    await updateCart(P_MOUSE,1);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC003_Add_Mouse");
+}
+
+async function TC004(){
+
+    console.log("TC004: Add Laptop + Mouse");
+
+    await resetCart();
+
+    await updateCart(P_LAPTOP,1);
+    await updateCart(P_MOUSE,1);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC004_Add_Laptop_Mouse");
+}
+
+async function TC005(){
+
+    console.log("TC005: Remove Laptop");
+
+    await resetCart();
+
+    await updateCart(P_LAPTOP,1);
+
+    await removeItem(P_LAPTOP);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC005_Remove_Laptop");
+}
+
+async function TC006(){
+
+    console.log("TC006: Add Multiple");
+
+    await resetCart();
+
+    await updateCart(P_LAPTOP,2);
+    await updateCart(P_MOUSE,1);
+
+    await new Promise(r=>setTimeout(r,500));
+
+    await takeScreenshot("TC006_Add_Multiple");
+}
+
+async function runWhiteBoxTests(){
+
+    console.clear();
+    console.log("🚀 RUNNING TC001 → TC006");
+
+    await TC001();
+    await TC002();
+    await TC003();
+    await TC004();
+    await TC005();
+    await TC006();
+
+    console.log("✅ ALL TESTS DONE");
+
+    alert("Đã chạy xong TC001 → TC006 và chụp screenshot!");
+}
+
+    // Khởi chạy khi mở trang
+    loadProducts();
+</script>
+
+</body>
+</html>

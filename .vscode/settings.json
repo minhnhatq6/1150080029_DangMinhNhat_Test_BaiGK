@@ -1,0 +1,5 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "tlaplus.tlc.modelChecker.options": "-workers 1 -coverage 1"
+}
