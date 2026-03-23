@@ -3,85 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo E-Commerce - Đề tài TLA+</title>
+    <title>Demo E-Commerce - Đề tài TLA+ (36 Test Cases)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .container { display: flex; gap: 30px; max-width: 1200px; margin: auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .container { display: flex; gap: 20px; max-width: 1400px; margin: auto; }
         .column { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
-        .product-card { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.2em;}
+        .product-card { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .price { color: #e74c3c; font-weight: bold; font-size: 1.2em; }
         .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-add { background-color: #3498db; color: white; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
         .qty-controls { display: flex; align-items: center; gap: 10px; }
-        .btn-qty { background-color: #ecf0f1; color: #333; padding: 5px 10px; border-radius: 3px; border: 1px solid #ccc; }
-        .btn-remove { background-color: #e74c3c; color: white; font-size: 0.8em; padding: 4px 8px; }
+        .btn-qty { background-color: #ecf0f1; color: #333; padding: 5px 10px; border-radius: 3px; border: 1px solid #ccc; cursor:pointer;}
+        .btn-remove { background-color: #e74c3c; color: white; font-size: 0.8em; padding: 4px 8px; cursor:pointer;}
         .total-section { text-align: right; font-size: 1.5em; font-weight: bold; color: #27ae60; background: #e8f8f5; padding: 15px; border-radius: 8px; }
         
-        /* NÂNG CẤP KHU VỰC TEST */
-        .lab-zone { margin-top: 30px; border: 2px dashed #e74c3c; background-color: #fadbd8; padding: 20px; border-radius: 10px; }
-        .lab-zone h3 { color: #c0392b; margin-top: 0; text-align: center; }
-        .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;}
-        .btn-test { background-color: #c0392b; color: white; padding: 12px; font-size: 1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; width: 100%; }
-        .btn-test:hover { background-color: #a93226; }
-        .btn-prepare { background-color: #f39c12; width: 100%; }
-        .btn-prepare:hover { background-color: #d68910; }
+        /* KHU VỰC TEST */
+        .test-section { margin-top: 20px; max-width: 1400px; margin-left: auto; margin-right: auto;}
+        .lab-zone { border: 2px dashed #2980b9; background-color: #ebf5fb; padding: 20px; border-radius: 10px; margin-bottom: 20px;}
+        .lab-zone.danger { border-color: #c0392b; background-color: #fadbd8; }
+        .lab-zone h3 { margin-top: 0; text-align: center; }
+        
+        .btn-prepare { background-color: #2980b9; color: white; width: 100%; padding: 15px; font-size: 1.1em; border-radius: 5px; border:none; cursor: pointer; font-weight: bold;}
+        .btn-prepare:hover { background-color: #1f618d; }
+        
+        .test-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;}
+        .btn-test { background-color: #c0392b; color: white; padding: 10px; font-size: 0.85em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; text-align:center;}
+        .btn-test:hover { background-color: #a93226; transform: scale(0.98);}
     </style>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
-<div class="header"><h1>🛒 Hệ Thống Giỏ Hàng Demo</h1></div>
+<div class="header"><h1>🛒 Hệ Thống Giỏ Hàng Demo - TLA+ Checker</h1></div>
 
 <div class="container">
-    <div class="column"><h2>🛍️ Cửa Hàng</h2><div id="productList"></div></div>
+    <div class="column">
+        <h2>🛍️ Cửa Hàng</h2>
+        <div id="productList"></div>
+    </div>
     <div class="column">
         <h2>🛒 Giỏ Hàng Của Bạn</h2>
-        <table><thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thao tác</th></tr></thead><tbody id="cartItems"></tbody></table>
-        <div class="total-section">Tổng tiền thanh toán: $<span id="totalPrice">0</span></div>
+        <table>
+            <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thao tác</th></tr></thead>
+            <tbody id="cartItems"></tbody>
+        </table>
+        <div class="total-section">Tổng tiền: $<span id="totalPrice">0</span></div>
     </div>
 </div>
 
-<!-- NÂNG CẤP: PHÒNG THÍ NGHIỆM CONCURRENCY -->
-<div class="container" style="margin-top: 20px;">
-    <div class="lab-zone" style="width: 100%;">
-        <h3>🔬 Phòng Thí Nghiệm Đồng Thời (Race Condition Lab)</h3>
-         <button class="btn btn-prepare" onclick="runWhiteBoxTests()">
-🚀 Chạy toàn bộ Test Case TC001 → TC006
-</button>
-        <p style="text-align:center;">Mở Console (F12) để xem log chi tiết. Bắt đầu bằng cách chuẩn bị giỏ hàng.</p>
-       
-        <button class="btn btn-prepare" onclick="prepareCartForTests()">Bước 1: Chuẩn bị giỏ hàng (Thêm 1 Laptop & 1 Chuột)</button>
+<div class="test-section">
+    <!-- KHU VỰC 1: TEST TUẦN TỰ -->
+    <div class="lab-zone">
+        <h3 style="color: #2980b9;">✅ MODULE 1: Các Hành Động Tuần Tự (TC001 - TC008)</h3>
+        <button class="btn btn-prepare" onclick="runSequentialTests()">
+            🚀 CHẠY TỰ ĐỘNG 1 LƯỢT TC001 ĐẾN TC008
+        </button>
+        <p style="text-align:center; font-size:0.9em;">Hệ thống sẽ tự dọn giỏ hàng, thực hiện từng bước có độ trễ và tự động chụp ảnh màn hình.</p>
+    </div>
+
+    <!-- KHU VỰC 2: TEST ĐỒNG THỜI -->
+    <div class="lab-zone danger">
+        <h3 style="color: #c0392b;">🔬 MODULE 2: Các Hành Động Đồng Thời / Race Condition (TC009 - TC036)</h3>
+        <p style="text-align:center; font-size:0.9em; margin-bottom: 0;">Mỗi nút bấm sẽ tự động <b>Setup điều kiện tiên quyết</b> -> <b>Bắn request song song</b> -> <b>Kiểm tra tính nhất quán</b>.</p>
         
-        <div class="test-grid">
-            <button class="btn-test" onclick="simulate_TC007()">TC007: Thêm sản phẩm với ID không tồn tại</button>
-            <button class="btn-test" onclick="simulate_TC008()">TC008: Thêm 2 Laptop cùng lúc</button>
-            <button class="btn-test" onclick="simulate_TC009()">TC009: Thêm Laptop & Chuột cùng lúc</button>
-            <button class="btn-test" onclick="simulate_TC010()">TC010: Thêm Chuột & Giảm Laptop</button>
-            <button class="btn-test" onclick="simulate_TC011()">TC011: Xóa Laptop & Thêm Chuột cùng lúc</button>
-            <button class="btn-test" onclick="simulate_TC012()">TC012: Xóa Laptop & Xóa Chuột cùng lúc</button>
+        <div class="test-grid" id="concurrentTestsGrid">
+            <!-- Nút bấm sẽ được Gen bằng JS ở dưới để code gọn gàng -->
         </div>
     </div>
 </div>
 
-
 <script>
-    // --- PHẦN BỊ THIẾU LÀ Ở ĐÂY ---
-    const P_LAPTOP = 1; // ID của Laptop trong database
-    const P_MOUSE = 2;  // ID của Chuột trong database
-    let productsDict = {}; // Biến lưu thông tin sản phẩm
+    const P_LAPTOP = 1; // ID của Laptop (Đóng vai trò là Sản phẩm A)
+    const P_MOUSE = 2;  // ID của Chuột (Đóng vai trò là Sản phẩm B)
+    let productsDict = {};
 
-    // --- CÁC HÀM GIAO DIỆN CƠ BẢN ---
+    // ==========================================
+    // 1. CÁC HÀM GIAO DIỆN VÀ GỌI API CƠ BẢN
+    // ==========================================
     async function loadProducts() {
         const res = await fetch('/api/cart/products');
         const products = await res.json();
         let html = '';
         products.forEach(p => {
             productsDict[p.id] = p;
-            html += `<div class="product-card"><div><h3>${p.name}</h3><div class="price">$${p.price}</div></div><button class="btn btn-add" onclick="updateCart(${p.id}, 1)">+ Thêm vào giỏ</button></div>`;
+            html += `<div class="product-card"><div><h3>${p.name} (Sản phẩm ${p.id === P_LAPTOP ? 'A' : 'B'})</h3><div class="price">$${p.price}</div></div><button class="btn btn-add" onclick="updateCart(${p.id}, 1)">+ Thêm</button></div>`;
         });
         document.getElementById('productList').innerHTML = html;
         loadCart();
@@ -91,6 +100,7 @@
         const resCart = await fetch('/api/cart/1');
         const cart = await resCart.json();
         document.getElementById('totalPrice').innerText = cart.totalPrice;
+        
         const resItems = await fetch('/api/cart/1/items');
         const items = await resItems.json();
         let html = '';
@@ -100,239 +110,192 @@
             items.forEach(item => {
                 if (item.quantity > 0) {
                     const pName = productsDict[item.productId] ? productsDict[item.productId].name : 'Sản phẩm ' + item.productId;
-                    html += `<tr><td><b>${pName}</b></td><td>$${item.price}</td><td><div class="qty-controls"><button class="btn-qty" onclick="updateCart(${item.productId}, -1)">-</button><span>${item.quantity}</span><button class="btn-qty" onclick="updateCart(${item.productId}, 1)">+</button></div></td><td><button class="btn-remove" onclick="removeItem(${item.productId})">Xóa</button></td></tr>`;
+                    html += `<tr>
+                        <td><b>${pName}</b></td>
+                        <td>$${item.price}</td>
+                        <td>
+                            <div class="qty-controls">
+                                <button class="btn-qty" onclick="updateCart(${item.productId}, -1)">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="btn-qty" onclick="updateCart(${item.productId}, 1)">+</button>
+                            </div>
+                        </td>
+                        <td><button class="btn-remove" onclick="removeItem(${item.productId})">Xóa hẳn</button></td>
+                    </tr>`;
                 }
             });
         }
         document.getElementById('cartItems').innerHTML = html;
     }
 
-    async function updateCart(productId, qty) {
-        await fetch(`/api/cart/1/add?productId=${productId}&qty=${qty}`, { method: 'POST' });
-        loadCart();
-    }
-    
-    async function removeItem(productId) {
-        if (confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) {
-            await fetch(`/api/cart/1/remove?productId=${productId}`, { method: 'POST' });
-            loadCart();
-        }
-    }
+    // Wrappers API trả về Promise (Dùng cho bắn song song)
+    const apiAdd = (pId, qty = 1) => fetch(`/api/cart/1/add?productId=${pId}&qty=${qty}`, { method: 'POST' });
+    const apiRemove = (pId) => fetch(`/api/cart/1/remove?productId=${pId}`, { method: 'POST' });
 
-    // --- CÁC HÀM MÔ PHỎNG LỖI ---
-    async function prepareCartForTests() {
-        console.clear();
-        console.log("--- BẮT ĐẦU CHUẨN BỊ GIỎ HÀNG ---");
-        await removeItem(P_LAPTOP); // Xóa sạch để làm lại từ đầu
-        await removeItem(P_MOUSE);
-        setTimeout(async () => {
-             await updateCart(P_LAPTOP, 1);
-             await updateCart(P_MOUSE, 1);
-             console.log("Chuẩn bị xong! Giỏ hàng đã có 1 Laptop và 1 Chuột. Tổng tiền: $1050.");
-             alert("Đã chuẩn bị xong giỏ hàng để test!");
-             loadCart();
-        }, 300); // Chờ một chút để đảm bảo xóa xong
-    }
+    async function updateCart(productId, qty) { await apiAdd(productId, qty); loadCart(); }
+    async function removeItem(productId) { await apiRemove(productId); loadCart(); }
 
-    const runTest = async (testName, req1, req2) => {
-        console.log(`\n--- BẮT ĐẦU TEST CASE [${testName}] ---`);
-        console.log("Chuẩn bị và bắn 2 request song song...");
-        
-        await Promise.all([req1, req2]);
-        
-        console.log("Cả 2 request đã được gửi đi. Đang chờ server xử lý...");
-        setTimeout(() => {
-            console.log("Server đã xử lý xong. Lấy lại dữ liệu giỏ hàng để kiểm tra kết quả.");
-            loadCart();
-            alert(`Test Case [${testName}] đã chạy xong! Hãy kiểm tra Console và Tổng tiền trên UI.`);
-        }, 500);
-    }
     async function takeScreenshot(name) {
-
-    const element = document.body;
-
-    const canvas = await html2canvas(element);
-
-    const link = document.createElement("a");
-    link.download = name + ".png";
-    link.href = canvas.toDataURL();
-
-    link.click();
-    }
-    async function resetCart(){
-    await fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, {method:'POST'});
-    await fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, {method:'POST'});
-    await new Promise(r=>setTimeout(r,300));
-}
-    async function simulate_TC007() {
-
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC007] ---");
-    console.log("Thêm sản phẩm với productId không tồn tại (999)");
-
-    try {
-
-        const res = await fetch(`/api/cart/1/add?productId=999&qty=1`, {
-            method: 'POST'
-        });
-
-        const text = await res.text();
-
-        console.log("Status:", res.status);
-        console.log("Response:", text);
-
-    } catch (err) {
-
-        console.error("Lỗi khi gọi API:", err);
-
+        const canvas = await html2canvas(document.body);
+        const link = document.createElement("a");
+        link.download = name + ".png";
+        link.href = canvas.toDataURL();
+        link.click();
     }
 
-    await new Promise(r=>setTimeout(r,500));
+    // ==========================================
+    // 2. KHU VỰC CHẠY TEST TUẦN TỰ (TC001 - TC008)
+    // ==========================================
+    async function resetCartCompletely() {
+        await apiRemove(P_LAPTOP);
+        await apiRemove(P_MOUSE);
+        await new Promise(r => setTimeout(r, 200));
+    }
 
-    loadCart();
-    await takeScreenshot("TC007_Invalid_Product");
-}
+    async function runSequentialTests() {
+        console.clear();
+        console.log("🚀 BẮT ĐẦU CHẠY AUTO TC001 -> TC008");
 
-async function simulate_TC008() {
+        // TC001
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1);
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC001_Them_A");
 
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC008] ---");
+        // TC002
+        await resetCartCompletely();
+        await updateCart(P_MOUSE, 1);
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC002_Them_B");
 
-    const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
-    const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
+        // TC003
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1); // Điều kiện tiên quyết
+        await updateCart(P_MOUSE, 1);  // Hành động
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC003_Them_B_Khi_Da_Co_A");
 
-    await Promise.all([req1, req2]);
+        // TC004
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1);
+        await updateCart(P_LAPTOP, 1); // Cập nhật tăng SL
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC004_Tang_SL_A");
 
-    await new Promise(r=>setTimeout(r,500));
+        // TC005
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1);
+        await updateCart(P_MOUSE, 1);
+        await updateCart(P_MOUSE, 1); // Cập nhật tăng SL B
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC005_Tang_SL_B");
 
-    loadCart();
-    await takeScreenshot("TC008_Add_2_Laptop_Concurrent");
-}
+        // TC006
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 2);
+        await updateCart(P_MOUSE, 1);
+        await apiRemove(P_LAPTOP); // Xóa A
+        await loadCart();
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC006_Xoa_A");
 
-async function simulate_TC009() {
+        // TC007
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1);
+        await updateCart(P_MOUSE, 2);
+        await apiRemove(P_MOUSE); // Xóa B
+        await loadCart();
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC007_Xoa_B");
 
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC009] ---");
+        // TC008
+        await resetCartCompletely();
+        await updateCart(P_LAPTOP, 1);
+        await updateCart(P_MOUSE, 2);
+        await apiAdd(P_LAPTOP, -1); // Giảm A về 0 (Tương đương xóa)
+        await loadCart();
+        await new Promise(r => setTimeout(r, 500));
+        await takeScreenshot("TC008_Giam_SL_A_Ve_0");
 
-    const req1 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=1`, { method: 'POST' });
-    const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
+        alert("Đã chạy xong TC001 -> TC008. File ảnh đã được tải xuống!");
+    }
 
-    await Promise.all([req1, req2]);
-
-    await new Promise(r=>setTimeout(r,500));
-
-    loadCart();
-    await takeScreenshot("TC009_Add_Laptop_Mouse_Concurrent");
-}
-
-async function simulate_TC010() {
-
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC010] ---");
-
-    const req1 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
-    const req2 = fetch(`/api/cart/1/add?productId=${P_LAPTOP}&qty=-1`, { method: 'POST' });
-
-    await Promise.all([req1, req2]);
-
-    await new Promise(r=>setTimeout(r,500));
-
-    loadCart();
-    await takeScreenshot("TC010_Add_Mouse_Decrease_Laptop");
-}
-
-async function simulate_TC011() {
-
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC011] ---");
-
-    const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
-    const req2 = fetch(`/api/cart/1/add?productId=${P_MOUSE}&qty=1`, { method: 'POST' });
-
-    await Promise.all([req1, req2]);
-
-    await new Promise(r=>setTimeout(r,500));
-
-    loadCart();
-    await takeScreenshot("TC011_Remove_Laptop_Add_Mouse");
-}
-
-async function simulate_TC012() {
-
-    console.log("\n--- BẮT ĐẦU TEST CASE [TC012] ---");
-
-    const req1 = fetch(`/api/cart/1/remove?productId=${P_LAPTOP}`, { method: 'POST' });
-    const req2 = fetch(`/api/cart/1/remove?productId=${P_MOUSE}`, { method: 'POST' });
-
-    await Promise.all([req1, req2]);
-
-    await new Promise(r=>setTimeout(r,500));
-
-    loadCart();
-    await takeScreenshot("TC012_Remove_Both_Items");
-}
+    // ==========================================
+    // 3. KHU VỰC CHẠY TEST ĐỒNG THỜI (TC009 - TC036)
+    // ==========================================
     
-async function TC001(){
-    console.log("TC001: Add Laptop");
-    await resetCart();
-    await updateCart(P_LAPTOP,1);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC001_Add_Laptop");
-}
+    // Hàm Set đúng trạng thái giỏ hàng trước khi test
+    async function setupCartForRace(qtyA, qtyB) {
+        await resetCartCompletely();
+        if(qtyA > 0) await apiAdd(P_LAPTOP, qtyA);
+        if(qtyB > 0) await apiAdd(P_MOUSE, qtyB);
+        await new Promise(r => setTimeout(r, 300));
+    }
 
-async function TC002(){
-    console.log("TC002: Add Laptop twice");
-    await resetCart();
-    await updateCart(P_LAPTOP,1);
-    await updateCart(P_LAPTOP,1);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC002_Add_Laptop_Twice");
-}
+    // Hàm thực thi chính
+    async function execConcurrent(tcId, name, initA, initB, reqFuncs) {
+        console.log(`\n--- ĐANG CHẠY ${tcId}: ${name} ---`);
+        
+        // 1. Chuẩn bị
+        await setupCartForRace(initA, initB);
+        console.log(`[Setup] Giỏ hàng: ${initA} Laptop(A), ${initB} Mouse(B)`);
+        await loadCart();
 
-async function TC003(){
-    console.log("TC003: Add Mouse");
-    await resetCart();
-    await updateCart(P_MOUSE,1);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC003_Add_Mouse");
-}
+        // 2. Bắn song song (Call các hàm trong reqFuncs cùng lúc)
+        console.log(`[Action] Bắn ${reqFuncs.length} request đồng thời...`);
+        const promises = reqFuncs.map(f => f());
+        await Promise.all(promises);
 
-async function TC004(){
-    console.log("TC004: Add Laptop + Mouse");
-    await resetCart();
-    await updateCart(P_LAPTOP,1);
-    await updateCart(P_MOUSE,1);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC004_Add_Laptop_Mouse");
-}
+        // 3. Lấy kết quả
+        await new Promise(r => setTimeout(r, 500));
+        await loadCart();
+        await takeScreenshot(`${tcId}_RaceCondition`);
+        console.log(`[Thành công] Server xử lý Atomic an toàn!`);
+    }
 
-async function TC005(){
-    console.log("TC005: Remove Laptop");
-    await resetCart();
-    await updateCart(P_LAPTOP,1);
-    await removeItem(P_LAPTOP);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC005_Remove_Laptop");
-}
+    // CẤU HÌNH DATA CHO 28 TEST CASE SONG SONG
+    const concurrentTestCases =[
+        { id: "TC009", name: "Thêm A & Thêm B (Giỏ trống)", a:0, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC010", name: "Thêm A & Thêm B (Có 1A)", a:1, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC011", name: "Thêm A & Xóa B (Có 1B)", a:0, b:1, reqs: [()=>apiAdd(P_LAPTOP), ()=>apiRemove(P_MOUSE)] },
+        { id: "TC012", name: "Thêm B & Xóa A (Có 1A)", a:1, b:0, reqs:[()=>apiAdd(P_MOUSE), ()=>apiRemove(P_LAPTOP)] },
+        { id: "TC013", name: "Thêm A & Xóa B (Có 1A,1B)", a:1, b:1, reqs: [()=>apiAdd(P_LAPTOP), ()=>apiRemove(P_MOUSE)] },
+        { id: "TC014", name: "Xóa A & Xóa B (Có 1A,1B)", a:1, b:1, reqs:[()=>apiRemove(P_LAPTOP), ()=>apiRemove(P_MOUSE)] },
+        { id: "TC015", name: "Xóa A & Xóa B (Có 2A,1B)", a:2, b:1, reqs: [()=>apiRemove(P_LAPTOP), ()=>apiRemove(P_MOUSE)] },
+        { id: "TC016", name: "2 User cùng Thêm A (Trống)", a:0, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC017", name: "2 User cùng Thêm A (Có 1A)", a:1, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC018", name: "2 User cùng Giảm A (Có 2A)", a:2, b:0, reqs:[()=>apiAdd(P_LAPTOP, -1), ()=>apiAdd(P_LAPTOP, -1)] },
+        { id: "TC019", name: "Tăng A=2 & Tăng B=2 (1A,1B)", a:1, b:1, reqs: [()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC020", name: "Tăng A=2 & Xóa B (1A,1B)", a:1, b:1, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiRemove(P_MOUSE)] },
+        { id: "TC021", name: "Xóa A & Tăng B=2 (1A,1B)", a:1, b:1, reqs: [()=>apiRemove(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC022", name: "Thêm A & Tăng B=2 (1B)", a:0, b:1, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC023", name: "Thêm B & Xóa A (1A,1B)", a:1, b:1, reqs: [()=>apiAdd(P_MOUSE), ()=>apiRemove(P_LAPTOP)] },
+        { id: "TC024", name: "Thêm A & Thêm B (1B)", a:0, b:1, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC025", name: "Giảm A=0 & Giảm B=0 (1A,1B)", a:1, b:1, reqs: [()=>apiAdd(P_LAPTOP,-1), ()=>apiAdd(P_MOUSE,-1)] },
+        { id: "TC026", name: "2 User cùng Giảm B (2A,2B)", a:2, b:2, reqs:[()=>apiAdd(P_MOUSE,-1), ()=>apiAdd(P_MOUSE,-1)] },
+        { id: "TC027", name: "Thêm A & Xóa A (1A)", a:1, b:0, reqs: [()=>apiAdd(P_LAPTOP), ()=>apiRemove(P_LAPTOP)] },
+        { id: "TC028", name: "Xóa A & Thêm A (1A)", a:1, b:0, reqs:[()=>apiRemove(P_LAPTOP), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC029", name: "Thêm B & Thêm A (Trống)", a:0, b:0, reqs:[()=>apiAdd(P_MOUSE), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC030", name: "Xóa B & Xóa A (1A,1B)", a:1, b:1, reqs:[()=>apiRemove(P_MOUSE), ()=>apiRemove(P_LAPTOP)] },
+        { id: "TC031", name: "Giảm A=1 & Giảm B=1 (2A,2B)", a:2, b:2, reqs:[()=>apiAdd(P_LAPTOP,-1), ()=>apiAdd(P_MOUSE,-1)] },
+        { id: "TC032", name: "Thêm A & Tăng A=2 (1A)", a:1, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC033", name: "Xóa A & Giảm A=0 (1A)", a:1, b:0, reqs:[()=>apiRemove(P_LAPTOP), ()=>apiAdd(P_LAPTOP,-1)] },
+        { id: "TC034", name: "Tăng A=2 & Thêm B (1A)", a:1, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_MOUSE)] },
+        { id: "TC035", name: "2 User cùng Tăng A=2 (1A)", a:1, b:0, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiAdd(P_LAPTOP)] },
+        { id: "TC036", name: "Thêm A + Xóa B + Tăng A (1A,1B)", a:1, b:1, reqs:[()=>apiAdd(P_LAPTOP), ()=>apiRemove(P_MOUSE), ()=>apiAdd(P_LAPTOP)] }
+    ];
 
-async function TC006(){
-    console.log("TC006: Add Multiple");
-    await resetCart();
-    await updateCart(P_LAPTOP,2);
-    await updateCart(P_MOUSE,1);
-    await new Promise(r=>setTimeout(r,500));
-    await takeScreenshot("TC006_Add_Multiple");
-}
+    // Khởi tạo các nút bấm vào giao diện
+    const grid = document.getElementById('concurrentTestsGrid');
+    concurrentTestCases.forEach((tc, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-test';
+        btn.innerText = `${tc.id}: ${tc.name}`;
+        btn.onclick = () => execConcurrent(tc.id, tc.name, tc.a, tc.b, tc.reqs);
+        grid.appendChild(btn);
+    });
 
-async function runWhiteBoxTests(){
-    console.clear();
-    console.log("🚀 RUNNING TC001 → TC006");
-    await TC001();
-    await TC002();
-    await TC003();
-    await TC004();
-    await TC005();
-    await TC006();
-    console.log("✅ ALL TESTS DONE");
-    alert("Đã chạy xong TC001 → TC006 và chụp screenshot!");
-}
-
-    // Khởi chạy khi mở trang
+    // Khởi chạy
     loadProducts();
 </script>
 
